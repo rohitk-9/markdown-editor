@@ -1,0 +1,30 @@
+# Ignore virtual environments
+venv/
+env/
+ENV/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+*.spec
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs or user settings
+*.log
+*.swp
+.kivy/
+.kivy_config/
+.idea/
+.vscode/
+
+# Python dotenv
+.env
