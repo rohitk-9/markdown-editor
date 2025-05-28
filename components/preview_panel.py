@@ -1,13 +1,37 @@
-# components/preview_panel.py
+import tempfile
+import webbrowser
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
-from models.markdown_parser import preview_markdown
+from kivy.properties import StringProperty
+from kivy.utils import get_color_from_hex
 
-class PreviewButton(Button):
-    def __init__(self, get_text_callback, **kwargs):
-        super().__init__(text="Live Preview", **kwargs)
-        self.get_text_callback = get_text_callback
-        self.on_press = self.show_preview
+class PreviewPanel(BoxLayout):
+    html_content = StringProperty("")
 
-    def show_preview(self):
-        text = self.get_text_callback()
-        preview_markdown(text)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = 'vertical'
+        self.padding = 10
+        self.spacing = 10
+
+        # Button to open preview in browser
+        self.open_in_browser_btn = Button(
+            text="Open in Browser",
+            size_hint=(1, None),
+            height=40,
+            background_color=get_color_from_hex("#00BCD4"),
+            color=get_color_from_hex("#000000")
+        )
+        self.open_in_browser_btn.bind(on_release=self.open_in_browser)
+
+        # Add only the button to the layout
+        self.add_widget(self.open_in_browser_btn)
+
+    def open_in_browser(self, *args):
+        if not self.html_content.strip():
+            return  # Nothing to show
+
+        with tempfile.NamedTemporaryFile('w', delete=False, suffix='.html', encoding='utf-8') as temp_file:
+            temp_file.write(self.html_content)
+            temp_file.flush()
+            webbrowser.open(f'file://{temp_file.name}')
