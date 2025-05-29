@@ -1,5 +1,3 @@
-# utils/file_dialog.py
-
 import os
 from kivy.utils import platform
 
@@ -47,15 +45,16 @@ def _ios_open_file_dialog():
     print("iOS file dialog not implemented.")
     return None
 
-def get_save_path(extension=".md"):
+def get_save_path(extension=".md", default_filename="untitled.md"):
     """
     Open a file save dialog appropriate for the platform and return the selected path.
+    Optionally, specify a default filename for the save dialog.
     """
     try:
         if platform in ("win", "linux", "macosx"):
-            return _desktop_save_dialog(extension)
+            return _desktop_save_dialog(extension, default_filename)
         elif platform == "android":
-            return _android_save_dialog()
+            return _android_save_dialog(default_filename)
         elif platform == "ios":
             return _ios_save_dialog()
         else:
@@ -65,8 +64,8 @@ def get_save_path(extension=".md"):
         print(f"Error during file dialog: {e}")
         return None
 
-# You already have the other save dialogs here.
-def _desktop_save_dialog(extension):
+# Desktop save dialog with default filename support
+def _desktop_save_dialog(extension, default_filename):
     try:
         from tkinter import Tk
         from tkinter.filedialog import asksaveasfilename
@@ -79,16 +78,21 @@ def _desktop_save_dialog(extension):
             ("HTML files", "*.html"),
             ("All files", "*.*")
         ]
-        path = asksaveasfilename(defaultextension=extension, filetypes=filetypes)
+        
+        # Use default filename if provided, otherwise set to empty string
+        filename = default_filename if default_filename else "untitled.md"
+        
+        # Prefill with the provided default filename
+        path = asksaveasfilename(defaultextension=extension, filetypes=filetypes, initialfile=filename)
         root.destroy()
         return path
     except ImportError:
         print("tkinter not available on this platform.")
         return None
 
-def _android_save_dialog():
+def _android_save_dialog(default_filename):
     from plyer import filechooser
-    result = filechooser.save_file(title="Save Markdown File")
+    result = filechooser.save_file(title="Save Markdown File", default_filename=default_filename)
     if result:
         return result[0]
     return None

@@ -7,7 +7,7 @@ from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
 from kivy.uix.filechooser import FileChooserIconView
 from kivy.uix.popup import Popup
-
+from kivy.uix.label import Label
 from models.file_manager import FileManager
 
 
@@ -78,6 +78,38 @@ class Toolbar(BoxLayout):
         # Clean up old previews on start
         self.cleanup_old_previews()
 
+    
+    
+    def show_message(self, message):
+        """Function to show a popup with the provided message."""
+        content = BoxLayout(orientation='vertical')
+
+        # Label now uses the dynamic message
+        message_label = Label(text=message, size_hint=(None, None), size=(300, 100))
+        content.add_widget(message_label)
+
+        close_button = Button(text="Close", size_hint=(None, None), size=(100, 50))
+        close_button.bind(on_release=self.close_popup)
+        content.add_widget(close_button)
+
+        self.popup = Popup(
+            title="Message",
+            content=content,
+            size_hint=(None, None),
+            size=(400, 200),
+            auto_dismiss=False
+        )
+
+        self.popup.open()
+
+    def close_popup(self, instance):
+        """Function to close the popup."""
+        self.popup.dismiss() 
+    
+    
+    
+    
+    
     def set_html_content(self, html: str):
         """Set the current HTML content for live preview."""
         self.html_content = html
@@ -96,6 +128,10 @@ class Toolbar(BoxLayout):
         if self.current_file_path:
             file_manager = FileManager()
             success = file_manager.save_file(self.current_file_path, content)
+            if success:
+                self.show_message("File saved successfully.")
+            else:
+                self.show_message("Failed to save file.")
             print("Saved" if success else "Save failed")
         else:
             # Fallback to Save As if no path exists yet
@@ -117,8 +153,10 @@ class Toolbar(BoxLayout):
         if success:
             self.current_file_path = file_path
             print(f"Saved to {file_path}")
+            self.show_message("File saved successfully.")
         else:
             print("Save As cancelled or failed.")
+            self.show_message("Failed to save file.")
 
 
     def open_file(self, *args):
