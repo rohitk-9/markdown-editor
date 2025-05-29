@@ -5,10 +5,14 @@ import webbrowser
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.utils import get_color_from_hex
+from kivy.uix.filechooser import FileChooserIconView
+from kivy.uix.popup import Popup
+
+from models.file_manager import FileManager
 
 
 class Toolbar(BoxLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, get_content_callback=None, set_content_callback=None, **kwargs):
         super().__init__(**kwargs)
         self.orientation = 'horizontal'
         self.size_hint_y = None
@@ -16,6 +20,45 @@ class Toolbar(BoxLayout):
         self.spacing = 10
         self.padding = [10, 5]
 
+        self.current_file_path = None
+
+        self.get_content_callback = get_content_callback  # This should return the Markdown string to save
+        self.set_content_callback = set_content_callback  # This should allow setting new content in the editor
+
+        # Save Button
+        self.save_button = Button(
+            text="Save",
+            size_hint=(None, 1),
+            width=150,
+            background_color=get_color_from_hex("#4CAF50"),
+            color=get_color_from_hex("#FFFFFF")
+        )
+        self.save_button.bind(on_release=self.save_markdown)
+        self.add_widget(self.save_button)
+
+        # Save As Button
+        self.save_as_button = Button(
+            text="Save As",
+            size_hint=(None, 1),
+            width=150,
+            background_color=get_color_from_hex("#FFC107"),
+            color=get_color_from_hex("#FFFFFF")
+        )
+        self.save_as_button.bind(on_release=self.save_markdown_as)
+        self.add_widget(self.save_as_button)
+
+        # Open Button
+        self.open_button = Button(
+            text="Open",
+            size_hint=(None, 1),
+            width=150,
+            background_color=get_color_from_hex("#2196F3"),
+            color=get_color_from_hex("#FFFFFF")
+        )
+        self.open_button.bind(on_release=self.open_file)
+        self.add_widget(self.open_button)
+
+        # Preview Button
         self.preview_button = Button(
             text="Open Preview in Browser",
             size_hint=(None, 1),
@@ -36,13 +79,65 @@ class Toolbar(BoxLayout):
         self.cleanup_old_previews()
 
     def set_html_content(self, html: str):
+        """Set the current HTML content for live preview."""
         self.html_content = html
+
+    def save_markdown(self, *args):
+        """Save to the current file if available."""
+        if not self.get_content_callback:
+            print("No content callback provided for saving.")
+            return
+
+        content = self.get_content_callback()
+        if not content.strip():
+            print("Nothing to save.")
+            return
+
+        if self.current_file_path:
+            file_manager = FileManager()
+            success = file_manager.save_file(self.current_file_path, content)
+            print("Saved" if success else "Save failed")
+        else:
+            # Fallback to Save As if no path exists yet
+            self.save_markdown_as()
+
+    def save_markdown_as(self, *args):
+        """Prompt user to choose a file path to save content."""
+        if not self.get_content_callback:
+            print("No content callback provided for saving.")
+            return
+    
+        content = self.get_content_callback()
+        if not content.strip():
+            print("Nothing to save.")
+            return
+    
+        file_manager = FileManager()
+        success, file_path = file_manager.save_file_as(content)
+        if success:
+            self.current_file_path = file_path
+            print(f"Saved to {file_path}")
+        else:
+            print("Save As cancelled or failed.")
+
+
+    def open_file(self, *args):
+        """Triggered when 'Open' is pressed. Uses callback and FileManager to load content."""
+        file_manager = FileManager()
+        content, file_path = file_manager.open_file(filetypes=(("Markdown", "*.md"), ("Text", "*.txt"), ("HTML", "*.html")))
+        if content:
+            if self.set_content_callback:
+                self.set_content_callback(content)
+                self.current_file_path = file_path
+            print(f"File '{file_path}' loaded successfully.")
+        else:
+            print("Failed to load file.")
 
     def open_preview_in_browser(self, *args):
         if not self.html_content.strip():
             return
 
-        self.cleanup_old_previews()  # Optional: also clean before each render
+        self.cleanup_old_previews()
 
         styled_html = f"""
         <html>
@@ -109,7 +204,7 @@ class Toolbar(BoxLayout):
 
         webbrowser.open(f'file://{file_path}')
 
-    def cleanup_old_previews(self, age_limit_minutes=1):
+    def cleanup_old_previews(self, age_limit_minutes=10):
         """Delete preview files older than `age_limit_minutes` from the preview folder."""
         now = time.time()
         for filename in os.listdir(self.preview_dir):
