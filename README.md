@@ -1,10 +1,4 @@
-# markdown-editor
-1. python -m venv venv
-2. source venv/bin/activate  # or venv\Scripts\activate on Windows
-3. pip install -r requirements.txt
-
-
-📝 Markdown Editor
+## 📝 Markdown Editor
 Markdown Editor is a simple, lightweight text editor built with Python and Kivy. It allows users to create and edit Markdown (.md), HTML (.html), and plain text (.txt) files in a clean and distraction-free interface. For Markdown files, you can click Preview to open the rendered content in your default web browser.
 
 ✅ Features
@@ -38,3 +32,12 @@ MarkdownEditorApp/
 ├── main.py               # Application entry point
 ├── requirements.txt      # Python dependencies
 └── README.md             # Project documentation
+
+
+## To use the code
+clone the repository
+1. python -m venv venv
+2. source venv/bin/activate  # or venv\Scripts\activate on Windows
+3. pip install -r requirements.txt
+
+
