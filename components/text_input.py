@@ -13,7 +13,7 @@ class MarkdownInput(TextInput):
         self.cursor_color = get_color_from_hex("#00BCD4") 
         self.background_color = get_color_from_hex("#1e1e1e")
         self.foreground_color = get_color_from_hex("#ffffff")
-        self.hint_text = "Start writing your markdonw text here ..."
+        self.hint_text = "Start writing your markdown text here ..."
 
         self.bind(text=self.on_text_change)
 
