@@ -20,9 +20,7 @@ Markdown Editor is a simple, lightweight text editor built with Python and Kivy.
 ❌ Android/iOS: Not currently supported.
 
 📁 Project Structure
-bash
-Copy
-Edit
+```
 MarkdownEditorApp/
 ├── assets/               # Icons and static assets
 ├── components/           # UI components (TextInput, Preview, Toolbar)
@@ -32,6 +30,7 @@ MarkdownEditorApp/
 ├── main.py               # Application entry point
 ├── requirements.txt      # Python dependencies
 └── README.md             # Project documentation
+```
 
 
 ## To use the code
